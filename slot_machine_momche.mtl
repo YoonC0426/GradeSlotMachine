@@ -1,5 +1,5 @@
 # Blender MTL File: 'slot_machine.blend'
-# Material Count: 7
+# Material Count: 4
 
 newmtl Material__6
 Ns 94.117647
@@ -10,39 +10,6 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 5
-
-newmtl Slot1
-Ns 94.117647
-Ka 0.088462 0.088462 0.088462
-Kd 0.640000 0.635931 0.173097
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 3
-map_Kd  C:\\Users\\yoony\\Desktop\\slot1.png
-
-newmtl Slot1.001
-Ns 94.117647
-Ka 0.088462 0.088462 0.088462
-Kd 0.456642 0.640000 0.308264
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 3
-map_Kd  C:\\Users\\yoony\\Desktop\\slot1.png
-
-newmtl Slot1.002
-Ns 94.117647
-Ka 0.088462 0.088462 0.088462
-Kd 0.640000 0.635931 0.173097
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 3
-map_Kd  C:\\Users\\yoony\\Desktop\\slot1.png
 
 newmtl lid
 Ns 94.117647

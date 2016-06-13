@@ -263,6 +263,7 @@ void Model_OBJ_Texture::Draw()
 		quv_count += UVS_PER_VERTEX;
 	}
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
 }
 
 void Model_OBJ_Texture::Release()

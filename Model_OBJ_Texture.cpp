@@ -124,6 +124,7 @@ int Model_OBJ_Texture::Load(char * filename)
 					&uvBuffer[TotalConnectedUvs],
 					&uvBuffer[TotalConnectedUvs + 1]);
 				TotalConnectedUvs += UVS_PER_VERTEX;
+				uvBuffer[TotalConnectedUvs + 1] = 1.0 - uvBuffer[TotalConnectedUvs + 1];
 			}
 			if (line.c_str()[0] == 'f')                              // The first character is an 'f': on this line is a point stored
 			{
@@ -173,7 +174,7 @@ int Model_OBJ_Texture::Load(char * filename)
 						tCounter += POINTS_PER_VERTEX;
 						tuvCounter += UVS_PER_VERTEX;
 					}
-					//uv ƒ¡∆Æ∑— ∫Œ∫–¿∫ ¡ª ¿÷¥Ÿ∞°~
+					//uv Ïª®Ìä∏Î°§ Î∂ÄÎ∂ÑÏùÄ Ï¢Ä ÏûàÎã§Í∞Ä~
 					triangle_index += TOTAL_FLOATS_IN_TRIANGLE;
 					triangle_uv_index += TOTAL_UV_FLOATS_IN_TRIANGLE;
 					TotalConnectedTriangles += TOTAL_FLOATS_IN_TRIANGLE;
@@ -245,7 +246,7 @@ void Model_OBJ_Texture::Draw()
 	int triangle_cnt = 0, quad_cnt = 0;
 	//printf("Faces_Triangles_uv[0] : %f\n", Faces_Triangles_uv[0]);
 	for (int i = 0; i < TotalConnectedTriangles; i += 3) {
-		//vertex 1∞≥ø° ¥Î«ÿ
+		//vertex 1Í∞úÏóê ÎåÄÌï¥
 		glTexCoord2f(Faces_Triangles_uv[tuv_count], Faces_Triangles_uv[tuv_count+1]);
 		glNormal3f(Faces_Triangles_vertex_normal[i], Faces_Triangles_vertex_normal[i + 1], Faces_Triangles_vertex_normal[i + 2]);
 		glVertex3f(Faces_Triangles[i], Faces_Triangles[i + 1], Faces_Triangles[i + 2]);

@@ -123,8 +123,8 @@ int Model_OBJ_Texture::Load(char * filename)
 				sscanf(line.c_str(), "%f %f",
 					&uvBuffer[TotalConnectedUvs],
 					&uvBuffer[TotalConnectedUvs + 1]);
-				TotalConnectedUvs += UVS_PER_VERTEX;
 				uvBuffer[TotalConnectedUvs + 1] = 1.0 - uvBuffer[TotalConnectedUvs + 1];
+				TotalConnectedUvs += UVS_PER_VERTEX;
 			}
 			if (line.c_str()[0] == 'f')                              // The first character is an 'f': on this line is a point stored
 			{
@@ -240,18 +240,19 @@ int Model_OBJ_Texture::Load(char * filename)
 
 void Model_OBJ_Texture::Draw()
 {
+
 	int tuv_count = 0, quv_count = 0;
 	glEnable(GL_TEXTURE_2D);
 	glBegin(GL_TRIANGLES);
 	int triangle_cnt = 0, quad_cnt = 0;
-	//printf("Faces_Triangles_uv[0] : %f\n", Faces_Triangles_uv[0]);
 	for (int i = 0; i < TotalConnectedTriangles; i += 3) {
 		//vertex 1개에 대해
 		glTexCoord2f(Faces_Triangles_uv[tuv_count], Faces_Triangles_uv[tuv_count+1]);
 		glNormal3f(Faces_Triangles_vertex_normal[i], Faces_Triangles_vertex_normal[i + 1], Faces_Triangles_vertex_normal[i + 2]);
 		glVertex3f(Faces_Triangles[i], Faces_Triangles[i + 1], Faces_Triangles[i + 2]);
-		//printf("(Triangle %d) vertex : %f %f %f, uv : %f %f\n", ++triangle_cnt, Faces_Triangles[i], Faces_Triangles[i + 1], Faces_Triangles[i + 2], Faces_Triangles_uv[tuv_count], Faces_Triangles_uv[tuv_count + 1]);
+		//printf("(Triangle %d) vertex : %f %f %f, uv : %f %f\n", triangle_cnt/3+1, Faces_Triangles[i], Faces_Triangles[i + 1], Faces_Triangles[i + 2], Faces_Triangles_uv[tuv_count], Faces_Triangles_uv[tuv_count + 1]);
 		tuv_count += UVS_PER_VERTEX;
+		triangle_cnt++;
 	}
 	glEnd();
 	glBegin(GL_QUADS);
@@ -259,8 +260,9 @@ void Model_OBJ_Texture::Draw()
 		glTexCoord2f(Faces_Quads_uv[quv_count], Faces_Quads_uv[quv_count+1]);
 		glNormal3f(Faces_Quads_vertex_normal[i], Faces_Quads_vertex_normal[i + 1], Faces_Quads_vertex_normal[i + 2]);
 		glVertex3f(Faces_Quads[i], Faces_Quads[i + 1], Faces_Quads[i + 2]);
-		//printf("(QUAD %d) vertex : %f %f %f, uv : %f %f\n", ++quad_cnt, Faces_Quads[i], Faces_Quads[i + 1], Faces_Quads[i + 2], Faces_Quads_uv[quv_count], Faces_Quads_uv[quv_count + 1]);
+		//printf("(QUAD %d) vertex : %f %f %f, uv : %f %f\n", quad_cnt/4+1, Faces_Quads[i], Faces_Quads[i + 1], Faces_Quads[i + 2], Faces_Quads_uv[quv_count], Faces_Quads_uv[quv_count + 1]);
 		quv_count += UVS_PER_VERTEX;
+		quad_cnt++;
 	}
 	glEnd();
 	glDisable(GL_TEXTURE_2D);

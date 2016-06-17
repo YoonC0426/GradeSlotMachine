@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 using namespace std;
 class Model_OBJ
 {
@@ -13,6 +14,21 @@ public:
 	long TotalConnectedTriangles; //stores the total numer of connected triangles
 	long TotalConnectedVertexNormals;
 	string MtlFileName;
+	class material {
+	public:
+		float Ka[4];
+		float Kd[4];
+		float Ks[4];
+		int startidx;
+
+		material();
+		material(float* Ka, float* Kd, float* Ks, int startidx);
+		~material();
+		void set_material();
+	};
+	material* Faces_Materials;
+	long TotalConnectedMaterials;
+	
 
 	Model_OBJ();
 	~Model_OBJ();

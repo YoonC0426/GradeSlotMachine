@@ -17,12 +17,12 @@
 #define TOTAL_FLOATS_IN_TRIANGLE 9
 #define VERTEX_PER_TRIANGLE 3
 using namespace std;
-
 Model_OBJ::Model_OBJ()
 {
 	this->TotalConnectedTriangles = 0;
 	this->TotalConnectedPoints = 0;
 	this->TotalConnectedVertexNormals = 0;
+	this->TotalConnectedMaterials = 0;
 }
 
 Model_OBJ::~Model_OBJ()
@@ -73,14 +73,13 @@ int Model_OBJ::Load(char * filename)
 		Faces_Triangles = (float*)malloc(fileSize * sizeof(float));         // Allocate memory for the triangles
 		Faces_Triangles_vertex_normal = (float*)malloc(fileSize * sizeof(float));
 		normals = (float*)malloc(fileSize * sizeof(float));               // Allocate memory for the normals
-
+		Faces_Materials = (material*)malloc(fileSize * sizeof(material));
 		int triangle_index = 0;                                    // Set triangle index to zero
 		int normal_index = 0;                                    // Set normal index to zero
 
 		while (!objFile.eof())                                 // Start reading file data
 		{
 			getline(objFile, line);                                 // Get line from file
-
 			if (line.c_str()[0] == 'v'&&line.c_str()[1] != 'n')                              // The first character is a v: on this line is a vertex stored.
 			{
 				line[0] = ' ';                                    // Set first character to 0. This will allow us to use sscanf
@@ -114,23 +113,42 @@ int Model_OBJ::Load(char * filename)
 				{
 					string mtlLine;
 					mtlFile.seekg(0, ios::end);                              // Go to end of the file, 
-					long mtlFileSize = mtlFile.tellg();                           // get file size
+					long mtlFileSize = mtlFile.tellg();                          // get file size
 					mtlFile.seekg(0, ios::beg);									// we'll use this to register memory for our 3d model
 					while (!mtlFile.eof())
 					{
 						getline(mtlFile, mtlLine);
 						if (mtlLine.substr(0, 6) == "newmtl" && mtlLine.substr(7)==mat_name)
 						{
+							float Kd[4] = { 0 }, Ks[4] = { 0 }, Ka[4] = { 0 };
 							while (!mtlFile.eof())
 							{
 								getline(mtlFile, mtlLine);
-								if (mtlLine.size() == 0)break;
-								if (mtlLine.substr(0, 6) == "newmtl"&& mtlLine.substr(7) != mat_name)break;
-								//material �Ӽ� �ο� 
+								if (mtlLine.size() == 0) break;
+								if (mtlLine.substr(0, 6) == "newmtl"&& mtlLine.substr(7) != mat_name) break;
+								
+								//material 속성 부여
+								if (mtlLine.substr(0, 2) == "Ka") {
+									mtlLine[0] = ' '; mtlLine[1] = ' ';
+									sscanf(mtlLine.c_str(), "%f %f %f",
+										&Ka[0], &Ka[1], &Ka[2]); Ka[3] = 1;
+								}
+								if (mtlLine.substr(0, 2) == "Kd") {
+									mtlLine[0] = ' '; mtlLine[1] = ' ';
+									sscanf(mtlLine.c_str(), "%f %f %f",
+										&Kd[0], &Kd[1], &Kd[2]); Kd[3] = 1;
+								}
+								if (mtlLine.substr(0, 2) == "Ks") {
+									mtlLine[0] = ' '; mtlLine[1] = ' ';
+									sscanf(mtlLine.c_str(), "%f %f %f",
+										&Ks[0], &Ks[1], &Ks[2]); Ks[3] = 1;
+								}
 							}
+							Faces_Materials[TotalConnectedMaterials++] = material(Ka, Kd, Ks, TotalConnectedTriangles);
 						}
 					}
 					mtlFile.close();
+
 				}
 				else
 				{
@@ -211,21 +229,40 @@ int Model_OBJ::Load(char * filename)
 
 void Model_OBJ::Draw()
 {
-	/*glEnableClientState(GL_VERTEX_ARRAY);                  // Enable vertex arrays
-	glEnableClientState(GL_NORMAL_ARRAY);                  // Enable normal arrays
-	glVertexPointer(3, GL_FLOAT, 0, Faces_Triangles);            // Vertex Pointer to triangle array
-	glNormalPointer(GL_FLOAT, 0, normals);                  // Normal pointer to normal array
-	glDrawArrays(GL_TRIANGLES, 0, TotalConnectedTriangles);      // Draw the triangles
-	glDisableClientState(GL_VERTEX_ARRAY);                  // Disable vertex arrays
-	glDisableClientState(GL_NORMAL_ARRAY);                 // Disable normal arrays
-	*/
-	glBegin(GL_TRIANGLES);
+	/*glBegin(GL_TRIANGLES);
 		for (int i = 0; i < TotalConnectedTriangles; i+=3) {
 			//if (i % 3 == 0)glNormal3f(normals[i], normals[i + 1], normals[i + 2]);
+			if (Faces_Materials[mat_cnt].startidx == i) {
+				printf("Faces_Triangles: %f %f %f\n", Faces_Triangles[i], Faces_Triangles[i + 1], Faces_Triangles[i + 2]);
+				Faces_Materials[mat_cnt++].set_material();
+			}
 			glNormal3f(Faces_Triangles_vertex_normal[i], Faces_Triangles_vertex_normal[i + 1], Faces_Triangles_vertex_normal[i + 2]);
 			glVertex3f(Faces_Triangles[i], Faces_Triangles[i + 1], Faces_Triangles[i + 2]);
-			}
-	glEnd();
+		}
+	glEnd();*/
+	int mat_cnt = 0;
+	for (int i = 0; i < TotalConnectedTriangles; i += 9) {
+		//glmaterialfv 적용
+		if (i >= Faces_Materials[mat_cnt].startidx && i < Faces_Materials[mat_cnt + 1].startidx) Faces_Materials[mat_cnt].set_material();
+			else if (mat_cnt != 0 && Faces_Materials[mat_cnt + 1].startidx == 0) Faces_Materials[mat_cnt].set_material();
+			else if (mat_cnt < TotalConnectedMaterials - 1) {
+				Faces_Materials[++mat_cnt].set_material();
+				/*printf("Faces_Materials[%d]: start_idx = %d\n", mat_cnt, Faces_Materials[mat_cnt].startidx);
+				printf("Ka: %f %f %f %f\n", Faces_Materials[mat_cnt].Ka[0], Faces_Materials[mat_cnt].Ka[1], Faces_Materials[mat_cnt].Ka[2], Faces_Materials[mat_cnt].Ka[3]);
+				printf("Kd: %f %f %f %f\n", Faces_Materials[mat_cnt].Kd[0], Faces_Materials[mat_cnt].Kd[1], Faces_Materials[mat_cnt].Kd[2], Faces_Materials[mat_cnt].Kd[3]);
+				printf("Ks: %f %f %f %f\n", Faces_Materials[mat_cnt].Ks[0], Faces_Materials[mat_cnt].Ks[1], Faces_Materials[mat_cnt].Ks[2], Faces_Materials[mat_cnt].Ks[3]);
+				printf("Total connected materials : %d\n", TotalConnectedMaterials);*/
+			}	
+		//face rendering
+		glBegin(GL_TRIANGLES);
+			glNormal3f(Faces_Triangles_vertex_normal[i], Faces_Triangles_vertex_normal[i + 1], Faces_Triangles_vertex_normal[i + 2]);
+			glVertex3f(Faces_Triangles[i], Faces_Triangles[i + 1], Faces_Triangles[i + 2]);
+			glNormal3f(Faces_Triangles_vertex_normal[i+3], Faces_Triangles_vertex_normal[i + 4], Faces_Triangles_vertex_normal[i + 5]);
+			glVertex3f(Faces_Triangles[i+3], Faces_Triangles[i + 4], Faces_Triangles[i + 5]);
+			glNormal3f(Faces_Triangles_vertex_normal[i+6], Faces_Triangles_vertex_normal[i + 7], Faces_Triangles_vertex_normal[i + 8]);
+			glVertex3f(Faces_Triangles[i+6], Faces_Triangles[i + 7], Faces_Triangles[i + 8]);
+		glEnd();
+	}
 }
 
 void Model_OBJ::Release()
@@ -233,4 +270,36 @@ void Model_OBJ::Release()
 	free(this->Faces_Triangles);
 	free(this->normals);
 	free(this->vertexBuffer);
+}
+
+Model_OBJ::material::material()
+{
+	for (int i = 0; i < 4; i++) {
+		this->Ka[i] = 0;
+		this->Kd[i] = 0;
+		this->Ks[i] = 0;
+	}
+	this->startidx = 0;
+	
+}
+
+Model_OBJ::material::material(float * Ka, float * Kd, float * Ks, int startidx)
+{
+	for (int i = 0; i < 4; i++) {
+		this->Ka[i] = Ka[i];
+		this->Kd[i] = Kd[i];
+		this->Ks[i] = Ks[i];
+		this->startidx = startidx;
+	}
+}
+
+Model_OBJ::material::~material()
+{
+}
+
+void Model_OBJ::material::set_material()
+{
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, this->Ka);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, this->Kd);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, this->Ks);
 }

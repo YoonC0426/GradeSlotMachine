@@ -64,6 +64,10 @@ public:
 	vector<Vertex> vList;
 	vector<Vertex> nList;
 	vector<UV> uvList;
+	vector<string> texFileList;
+	GLuint subTexArr[20];
+	int subTex_arrIdx;
+
 	int numOfV,numOfN,numOfF,numOfSub,numOfUv;
 	string MtlFileName;
 	

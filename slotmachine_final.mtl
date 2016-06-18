@@ -31,7 +31,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd 컴그\Slot_Machine\slot1.png
+map_Kd slot1.png
 
 newmtl Slot1.001
 Ns 92.156863
@@ -42,7 +42,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd 컴그\Slot_Machine\slot1.png
+map_Kd slot1.png
 
 newmtl Slot1.002
 Ns 92.156863
@@ -53,7 +53,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd 컴그\Slot_Machine\slot1.png
+map_Kd slot1.png
 
 newmtl red
 Ns 86.274510

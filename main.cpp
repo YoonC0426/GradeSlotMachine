@@ -12,10 +12,10 @@
 #define PI 3.14151926535
 using namespace std;
 float xRot = 0.0, yRot = 0.0, zRot = 0.0;
-float xCam = 3.0, yCam = -3.0, xDirect= 3.0, yDirect=0;
+float xCam = 3.0, yCam = -3.0, xDirect= xCam, yDirect= yCam+1;
 int blueAngle = 0;
 GLuint textures[TEXTURES_NUMBER];
-Model_OBJ_Texture  obj_momche, obj_sonjabi, obj_slot[3], obj_view_slot;
+Model_OBJ_Texture  obj_momche, obj_sonjabi, obj_slot[3], obj_view_slot, obj_chair;
 GLfloat vertices[][3] = {
 	{ -4.0, -4.0,  2.0 },   // 0 
 	{ -4.0,  4.0,  2.0 },   // 1
@@ -139,16 +139,13 @@ void init(void) {
 	char filename2[] = "wall.jpg";
 	char filename3[] = "up.jpg";
 	char filename4[] = "floor.jpg";
-	char filename5[] = "slot1.png";
-	char filename6[] = "ku.png";
-	glGenTextures(6, textures);
+	//char filename5[] = "slot1.png";
+	glGenTextures(4, textures);
 	LoadMeshFromFile(filename1, textures[0]);
 	LoadMeshFromFile(filename2, textures[1]);
 	LoadMeshFromFile(filename3, textures[2]);
 	LoadMeshFromFile(filename4, textures[3]);
-	LoadMeshFromFile(filename5, textures[4]);
-	LoadMeshFromFile(filename6, textures[5]);
-
+	//LoadMeshFromFile(filename5, textures[4]);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glColor3f(1.0, 1.0, 0.0);
 	glEnable(GL_DEPTH_TEST);
@@ -162,6 +159,10 @@ void reshape(int w, int h) {
 	gluPerspective(60.0, 1.0, 1.0, 100.0);  // 멀고 가까움을 표현.
 }
 void keyboard(unsigned char key, int x, int y) {
+	float temp_x = xDirect - xCam;
+	float temp_y = yDirect - yCam;
+	float rot_x = 0;
+	float rot_y = 0;
 	switch (key) {
 	case 'x':
 		//xRot += 3.0;
@@ -178,183 +179,54 @@ void keyboard(unsigned char key, int x, int y) {
 	case '2':
 		//xCam -= 0.1;
 		break;
+	case 'a':
+		rot_x = temp_x*cos(5 * PI / 180.0f) - temp_y*sin(5 * PI / 180.0f);
+		rot_y = temp_y*cos(5 * PI / 180.0f) + temp_x*sin(5 * PI / 180.0f);
+		xDirect = xCam + rot_x;
+		yDirect = yCam + rot_y;
+		break;
+	case 's':
+		rot_x = temp_x*cos(5 * PI / 180.0f) + temp_y*sin(5 * PI / 180.0f);
+		rot_y = temp_y*cos(5 * PI / 180.0f) - temp_x*sin(5 * PI / 180.0f);
+		xDirect = xCam + rot_x;
+		yDirect = yCam + rot_y;
+		break;
 	}
 	glutPostRedisplay();
 }
 void specialKeyboard(int key, int x, int y) {
+	float temp_x = xDirect - xCam;
+	float temp_y = yDirect - yCam;
+	float cross_x = 0;
+	float cross_y = 0;
 	switch (key) {
 	case GLUT_KEY_UP:
-		//조건문
-		if (xCam >= -3.0&&xCam <= 3.0&&yCam >= -3.0&&yCam <= 3.0) {
-			if (xCam == xDirect)
-			{
-				if (yCam < yDirect) {
-					yCam += 0.1;
-					yDirect += 0.1;
-					if (yCam > 2.7) {
-						yCam = -2.7;
-						yDirect = 0;
-					}
-				}
-				else if (yCam > yDirect) {
-					yCam -= 0.1;
-					yDirect -= 0.1;
-					if (yCam < -2.7) {
-						yCam = -2.7;
-						yDirect = 0;
-					}
-				}
-			}
-			else if (yCam == yDirect)
-			{
-				if (xCam > xDirect) {
-					xCam -= 0.1;
-					xDirect -= 0.1;
-					if (xCam < -2.7) {
-						xCam = -2.7;
-						xDirect = 0;
-					}
-				}
-				else if (xCam < xDirect) {
-					xCam += 0.1;
-					xDirect += 0.1;
-					if (xCam > 2.7) {
-						xCam = 2.7;
-						xDirect = 0;
-					}
-				}
-			}
-		}
-		else if (xCam < -3.0) {
-			xCam = -3.0;
-			xDirect = 0.0;
-		}
-		else if (xCam > 3.0) {
-			xCam = 3.0;
-			xDirect = 0.0;
-		}
-		else if (yCam < -3.0) {
-			yCam - -3.0;
-			yDirect = 0.0;
-		}
-		else if (yCam > 3.0) {
-			yCam = 3.0;
-			yDirect = 0.0;
-		}
+		xCam += temp_x / 10.0f;
+		yCam += temp_y / 10.0f;
+		xDirect += temp_x / 10.0f;
+		yDirect += temp_y / 10.0f;
 		break;
 	case GLUT_KEY_DOWN:
-		if (xCam >= -3.0&&xCam <= 3.0&&yCam >= -3.0&&yCam <= 3.0) {
-			if (xCam == xDirect)
-			{
-				if (yCam < yDirect) {
-					yCam -= 0.1;
-					yDirect -= 0.1;
-					if (yCam < -2.7) {
-						yCam = -2.7;
-						yDirect = 0;
-					}
-				}
-				else if (yCam > yDirect) {
-					yCam += 0.1;
-					yDirect += 0.1;
-					if (yCam > 2.7) {
-						yCam = 2.7;
-						yDirect = 0;
-					}
-				}
-			}
-			else if (yCam == yDirect)
-			{
-				if (xCam > xDirect) {
-					xCam += 0.1;
-					xDirect += 0.1;
-					if (xCam > 2.7) {
-						xCam = 2.7;
-						xDirect = 0;
-					}
-				}
-				else if (xCam < xDirect) {
-					xCam -= 0.1;
-					xDirect -= 0.1;
-					if (xCam < -2.7) {
-						xCam = -2.7;
-						xDirect = 0;
-					}
-				}
-			}
-		}
-		else if (xCam < -3.0) {
-			xCam = -3.0;
-			xDirect = 0.0;
-		}
-		else if (xCam > 3.0) {
-			xCam = 3.0;
-			xDirect = 0.0;
-		}
-		else if (yCam < -3.0) {
-			yCam - -3.0;
-			yDirect = 0.0;
-		}
-		else if (yCam > 3.0) {
-			yCam = 3.0;
-			yDirect = 0.0;
-		}
+		xCam -= temp_x / 10.0f;
+		yCam -= temp_y / 10.0f;
+		xDirect -= temp_x / 10.0f;
+		yDirect -= temp_y / 10.0f;
 		break;
 	case GLUT_KEY_LEFT:
-		if (xCam == xDirect)
-		{
-			if (yCam < yDirect) {
-				int tmp = yDirect - yCam;
-				yDirect = yCam;
-				xDirect = xCam - tmp;
-			}
-			else if (yCam > yDirect) {
-				int tmp = yCam - yDirect;
-				yDirect = yCam;
-				xDirect = xCam + tmp;
-			}
-		}
-		else if (yCam == yDirect)
-		{
-			if (xCam > xDirect) {
-				int tmp = xCam - xDirect;
-				xDirect = xCam;
-				yDirect = yCam - tmp;
-			}
-			else if (xCam < xDirect) {
-				int tmp = xDirect - xCam;
-				xDirect = xCam;
-				yDirect = yCam + tmp;
-			}
-		}
+		cross_x = -temp_y;
+		cross_y = temp_x;
+		xCam += cross_x / 10.0f;
+		yCam += cross_y / 10.0f;
+		xDirect += cross_x / 10.0f;
+		yDirect += cross_y / 10.0f;
 		break;
 	case GLUT_KEY_RIGHT:
-		if (xCam == xDirect)
-		{
-			if (yCam < yDirect) {
-				int tmp = yDirect - yCam;
-				yDirect = yCam;
-				xDirect = xCam + tmp;
-			}
-			else if (yCam > yDirect) {
-				int tmp = yCam - yDirect;
-				yDirect = yCam;
-				xDirect = xCam - tmp;
-			}
-		}
-		else if (yCam == yDirect)
-		{
-			if (xCam > xDirect) {
-				int tmp = xCam - xDirect;
-				xDirect = xCam;
-				yDirect = yCam + tmp;
-			}
-			else if (xCam < xDirect) {
-				int tmp = xDirect - xCam;
-				xDirect = xCam;
-				yDirect = yCam - tmp;
-			}
-		}
+		cross_x = temp_y;
+		cross_y = -temp_x;
+		xCam += cross_x / 10.0f;
+		yCam += cross_y / 10.0f;
+		xDirect += cross_x / 10.0f;
+		yDirect += cross_y / 10.0f;
 		break;
 	}
 	glutPostRedisplay();
@@ -364,12 +236,26 @@ void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(xCam,yCam, 0.5, xDirect, yDirect, 0.5, 0.0, 0.0, 1.0);
-	//gluLookAt(xCam, yCam, 0.5, xCam, yCam + 1 , 0.5, 0.0, 0.0, 1.0);
-	//gluLookAt(3.0, -3.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-	//printf("camera position: %f %f %f\n", xCam, yCam, 0.5);
-	//printf("direction : %f %f %f\n", xDirect, yDirect, 0.5);
-
+	float temp_x = xDirect - xCam;
+	float temp_y = yDirect - yCam;
+	if (xCam < -3.0) {
+		xCam = -3.0;
+		xDirect = temp_x + xCam;
+	}
+	if (xCam > 3.0) {
+		xCam = 3.0;
+		xDirect = temp_x + xCam;
+	}
+	if (yCam < -3.0) {
+		yCam = -3.0;
+		yDirect = temp_y + yCam;
+	}
+	if (yCam > 3.0) {
+		yCam = 3.0;
+		yDirect = temp_y + yCam;
+	}
+	gluLookAt(xCam, yCam, 0.0, xDirect, yDirect , 0.0, 0.0, 0.0, 1.0);
+	
 	glColor3f(1.0, 1.0, 1.0);
 	glPushMatrix();
 		glRotatef(xRot, 1.0, 0.0, 0.0);
@@ -396,11 +282,25 @@ void myDisplay(void) {
 		glPopMatrix();
 
 		glPushMatrix();
+		glTranslatef(3.5, 2.8, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
 		glScalef(0.8, 0.8, 0.8);
 		glTranslatef(3.0, 2.0, 0);
 		glRotatef(90, 0, 1, 0);
 		glRotatef(90, 0, 0, 1);
 		obj_view_slot.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(3.5, 1.6, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
 		glPopMatrix();
 
 		glPushMatrix();
@@ -412,12 +312,27 @@ void myDisplay(void) {
 		glPopMatrix();
 
 		glPushMatrix();
+		glTranslatef(3.5, 0.4, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
 		glScalef(0.8, 0.8, 0.8);
 		glTranslatef(3.0, -1.0, 0);
 		glRotatef(90, 0, 1, 0);
 		glRotatef(90, 0, 0, 1);
 		obj_view_slot.Draw();
 		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(3.5, -0.8, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
+		glPopMatrix();
+
 		//(+,+) 2번
 		glPushMatrix();
 		glScalef(0.8, 0.8, 0.8);
@@ -425,6 +340,13 @@ void myDisplay(void) {
 		glRotatef(-90, 0, 1, 0);
 		glRotatef(-90, 0, 0, 1);
 		obj_view_slot.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(0.7, 2.8, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
 		glPopMatrix();
 
 		glPushMatrix();
@@ -436,11 +358,25 @@ void myDisplay(void) {
 		glPopMatrix();
 
 		glPushMatrix();
+		glTranslatef(0.7, 1.6, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
 		glScalef(0.8, 0.8, 0.8);
 		glTranslatef(2.0, 0.5, 0);
 		glRotatef(-90, 0, 1, 0);
 		glRotatef(-90, 0, 0, 1);
 		obj_view_slot.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(0.7, 0.4, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
 		glPopMatrix();
 
 		glPushMatrix();
@@ -450,6 +386,13 @@ void myDisplay(void) {
 		glRotatef(-90, 0, 0, 1);
 		obj_view_slot.Draw();
 		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(0.7, -0.8, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
+		glPopMatrix();
 		//(-,+)
 		glPushMatrix();
 		glScalef(0.8, 0.8, 0.8);
@@ -457,6 +400,13 @@ void myDisplay(void) {
 		glRotatef(90, 0, 1, 0);
 		glRotatef(90, 0, 0, 1);
 		obj_view_slot.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(-1.4, 2.8, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
 		glPopMatrix();
 		
 		glPushMatrix();
@@ -468,11 +418,25 @@ void myDisplay(void) {
 		glPopMatrix();
 
 		glPushMatrix();
+		glTranslatef(-1.4, 1.6, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
 		glScalef(0.8, 0.8, 0.8);
 		glTranslatef(-3.0, 0.5, 0);
 		glRotatef(90, 0, 1, 0);
 		glRotatef(90, 0, 0, 1);
 		obj_view_slot.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(-1.4, 0.4 , -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
 		glPopMatrix();
 
 		glPushMatrix();
@@ -482,6 +446,14 @@ void myDisplay(void) {
 		glRotatef(90, 0, 0, 1);
 		obj_view_slot.Draw();
 		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(-1.4, -0.8, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
+		glPopMatrix();
+
 		//(-,-)
 		glPushMatrix();
 		glScalef(0.8, 0.8, 0.8);
@@ -489,6 +461,13 @@ void myDisplay(void) {
 		glRotatef(-90, 1, 0, 0);
 		glRotatef(180, 0, 0, 1);
 		obj_view_slot.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(0.8, -2.2, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
 		glPopMatrix();
 
 		glPushMatrix();
@@ -500,6 +479,13 @@ void myDisplay(void) {
 		glPopMatrix();
 
 		glPushMatrix();
+		glTranslatef(-0.4, -2.2, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
 		glScalef(0.8, 0.8, 0.8);
 		glTranslatef(-2.0, -4.0, 0.0);
 		glRotatef(-90, 1, 0, 0);
@@ -508,13 +494,31 @@ void myDisplay(void) {
 		glPopMatrix();
 	
 		glPushMatrix();
+		glTranslatef(-1.6, -2.2, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
 		glScalef(0.8, 0.8, 0.8);
 		glTranslatef(-3.5, -4.0, 0.0);
 		glRotatef(-90, 1, 0, 0);
 		glRotatef(180, 0, 0, 1);
 		obj_view_slot.Draw();
 		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(-2.8, -2.2, -1.0);
+		glScalef(0.4, 0.4, 0.4);
+		glRotatef(90, 1, 0, 0);
+		obj_chair.Draw();
+		glPopMatrix();
+
+
 		//rotation slot machine
+		glTranslatef(0, 3.0, 0);
+		glRotatef(-90, 0, 0, 1);
 		glTranslatef(-0.7, 0, 0);
 		glScalef(0.8, 0.8, 0.8);
 		glRotatef(-90, 0, 1, 0);	
@@ -554,12 +558,13 @@ int main(int argc, char ** argv)
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(specialKeyboard);
-	//obj_momche.Load("Slot_Machine_Momche.obj");
-	//obj_sonjabi.Load("Slot_Machine_sonjabi.obj");
-	//obj_slot[0].Load("Slot_Machine_slot.obj");
-	//obj_slot[1].Load("Slot_Machine_slot.obj");
-	//obj_slot[2].Load("Slot_Machine_slot.obj");
-	obj_view_slot.Load("slotmachine_final.obj");
+	obj_momche.Load("slotmachine_momche.obj");
+	obj_sonjabi.Load("slotmachine_sonjabi.obj");
+	obj_slot[0].Load("Slot_Machine_slot.obj");
+	obj_slot[1].Load("Slot_Machine_slot.obj");
+	obj_slot[2].Load("Slot_Machine_slot.obj");
+	obj_view_slot.Load("slotmachine_reafinal.obj");
+	obj_chair.Load("chair.obj");
 	glutMainLoop();
 	return 0;
 }

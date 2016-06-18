@@ -8,20 +8,14 @@
 #include<math.h>
 #include "Model_OBJ.h"
 #include "Model_OBJ_Texture.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
+#define TEXTURES_NUMBER 6
 #define PI 3.14151926535
 using namespace std;
 float xRot = 0.0, yRot = 0.0, zRot = 0.0;
 float xCam = 0.8;
 int blueAngle = 0;
-GLubyte *pBytes; //데이터를 가리킬 포인터
-BITMAPINFO *info; //비트맵 헤더 저장할 변수
-GLuint textures[5];
-Model_OBJ obj_momche, obj_sonjabi;
-Model_OBJ_Texture  obj_slot[3];
-
+GLuint textures[TEXTURES_NUMBER];
+Model_OBJ_Texture  obj_momche, obj_sonjabi, obj_slot[3], obj_view_slot;
 GLfloat vertices[][3] = {
 	{ -4.0, -4.0,  2.0 },   // 0 
 	{ -4.0,  4.0,  2.0 },   // 1
@@ -31,8 +25,7 @@ GLfloat vertices[][3] = {
 	{ -4.0,  4.0, -1.0 },   // 5
 	{ 4.0,  4.0, -1.0 },   // 6
 	{ 4.0, -4.0, -1.0 } };  // 7
-
-bool LoadMeshFromFile(char *texFile, GLuint &tex_id) {
+/*bool LoadMeshFromFile(char *texFile, GLuint &tex_id) {
 	FILE *fp = fopen(texFile, "rb");
 	if (!fp) {
 		printf("ERROR : NO %s.\n fail to bind %d\n", texFile, tex_id);
@@ -52,7 +45,7 @@ bool LoadMeshFromFile(char *texFile, GLuint &tex_id) {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, GL_MODULATE);
 	return true;
-}
+}*/
 
 float* getNormal(float * v1, float * v2, float * v3)
 {
@@ -78,7 +71,6 @@ float* getNormal(float * v1, float * v2, float * v3)
 	norm[0] = vr[0] / val;
 	norm[1] = vr[1] / val;
 	norm[2] = vr[2] / val;
-
 
 	return norm;
 }
@@ -196,13 +188,14 @@ void init(void) {
 	char filename3[] = "up.jpg";
 	char filename4[] = "texture4.bmp";
 	char filename5[] = "slot1.png";
-	
-	glGenTextures(5, textures);
+	char filename6[] = "ku.png";
+	glGenTextures(6, textures);
 	LoadMeshFromFile(filename1, textures[0]);
 	LoadMeshFromFile(filename2, textures[1]);
 	LoadMeshFromFile(filename3, textures[2]);
 	LoadMeshFromFile(filename4, textures[3]);
 	LoadMeshFromFile(filename5, textures[4]);
+	LoadMeshFromFile(filename6, textures[5]);
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glColor3f(1.0, 1.0, 0.0);
@@ -326,7 +319,7 @@ void myDisplay(void) {
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, matDif);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
 		glMaterialf(GL_FRONT, GL_SHININESS, matShininess);*/
-
+		obj_view_slot.Draw();
 		glTranslatef(-0.7, 0, 0);
 		glScalef(1.0, 1.0, 1.0);
 		glRotatef(-90, 0, 1, 0);	
@@ -339,8 +332,8 @@ void myDisplay(void) {
 			glTranslatef(-2, 0, 0);
 		glPopMatrix();
 		
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, textures[4]);
+		//glEnable(GL_TEXTURE_2D);
+		//glBindTexture(GL_TEXTURE_2D, textures[4]);
 		obj_slot[0].Draw();
 		glPushMatrix();
 			glTranslatef(-0.3, 0, 0);
@@ -350,7 +343,7 @@ void myDisplay(void) {
 			glTranslatef(0.3, 0, 0);
 			obj_slot[2].Draw();
 		glPopMatrix();
-		glDisable(GL_TEXTURE_2D);
+		//glDisable(GL_TEXTURE_2D);
 		//glDisable(GL_LIGHT0);
 		//glDisable(GL_LIGHTING);
 		glPopMatrix();
@@ -402,7 +395,7 @@ int main(int argc, char ** argv)
 	obj_slot[0].Load("Slot_Machine_slot.obj");
 	obj_slot[1].Load("Slot_Machine_slot.obj");
 	obj_slot[2].Load("Slot_Machine_slot.obj");
+	//obj_view_slot.Load("chair.obj");
 	glutMainLoop();
-
 	return 0;
 }

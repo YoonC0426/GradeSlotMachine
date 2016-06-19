@@ -16,8 +16,8 @@
 #include "stb_image.h"
 #define VERTEX_PER_TRIANGLE 3
 #define VERTEX_PER_QUAD 4
-#define VERTEX_PER_FACE 4
-#define MAX_NUM_OF_SLASH_PER_FACE 8
+#define VERTEX_PER_FACE 16
+#define MAX_NUM_OF_SLASH_PER_FACE 32
 using namespace std;
 
 bool LoadMeshFromFile(string loadFile, GLuint &tex_id) {
@@ -49,6 +49,7 @@ Model_OBJ_Texture::Model_OBJ_Texture()
 	this->numOfF = 0;
 	this->numOfSub = 0;
 	this->numOfUv = 0;
+	this->subTex_arrIdx = 0;
 }
 
 
@@ -220,9 +221,80 @@ int Model_OBJ_Texture::Load(char * filename)
 						numOfF++;
 					}
 				}
+				else if (slash_cnt == 16) {
+					if (slash_idx[1] - slash_idx[0] != 1) {
+						sscanf(line.c_str(), "%i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i",
+							&vertexNumber[0], &uvNumber[0], &normalNumber[0],
+							&vertexNumber[1], &uvNumber[1], &normalNumber[1],
+							&vertexNumber[2], &uvNumber[2], &normalNumber[2],
+							&vertexNumber[3], &uvNumber[3], &normalNumber[3],
+							&vertexNumber[4], &uvNumber[4], &normalNumber[4],
+							&vertexNumber[5], &uvNumber[5], &normalNumber[5],
+							&vertexNumber[6], &uvNumber[6], &normalNumber[6],
+							&vertexNumber[7], &uvNumber[7], &normalNumber[7]);
+						for (int i = 0; i < 8; i++) {
+							vertexNumber[i] -= 1;
+							uvNumber[i] -= 1;
+							normalNumber[i] -= 1;
+						}
+						for (int i = 0; i < 8; i++) {
+							temp_f.face_vList.push_back(vList[vertexNumber[i]]);
+							temp_f.face_nList.push_back(nList[normalNumber[i]]);
+							temp_f.face_uvList.push_back(uvList[uvNumber[i]]);
+						}
+						Mesh_subList[numOfSub - 1].subMesh_fList.push_back(temp_f);
+						numOfF++;
+					}
+				}
+				else if (slash_cnt == 32) {
+					if (slash_idx[1] - slash_idx[0] != 1) {
+						sscanf(line.c_str(), "%i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i",
+							&vertexNumber[0], &uvNumber[0], &normalNumber[0],
+							&vertexNumber[1], &uvNumber[1], &normalNumber[1],
+							&vertexNumber[2], &uvNumber[2], &normalNumber[2],
+							&vertexNumber[3], &uvNumber[3], &normalNumber[3],
+							&vertexNumber[4], &uvNumber[4], &normalNumber[4],
+							&vertexNumber[5], &uvNumber[5], &normalNumber[5],
+							&vertexNumber[6], &uvNumber[6], &normalNumber[6],
+							&vertexNumber[7], &uvNumber[7], &normalNumber[7],
+							&vertexNumber[8], &uvNumber[8], &normalNumber[8],
+							&vertexNumber[9], &uvNumber[9], &normalNumber[9],
+							&vertexNumber[10], &uvNumber[10], &normalNumber[10],
+							&vertexNumber[11], &uvNumber[11], &normalNumber[11],
+							&vertexNumber[12], &uvNumber[12], &normalNumber[12],
+							&vertexNumber[13], &uvNumber[13], &normalNumber[13],
+							&vertexNumber[14], &uvNumber[14], &normalNumber[14],
+							&vertexNumber[15], &uvNumber[15], &normalNumber[15]);
+						for (int i = 0; i < 16; i++) {
+							vertexNumber[i] -= 1;
+							uvNumber[i] -= 1;
+							normalNumber[i] -= 1;
+						}
+						for (int i = 0; i < 16; i++) {
+							temp_f.face_vList.push_back(vList[vertexNumber[i]]);
+							temp_f.face_nList.push_back(nList[normalNumber[i]]);
+							temp_f.face_uvList.push_back(uvList[uvNumber[i]]);
+						}
+						Mesh_subList[numOfSub - 1].subMesh_fList.push_back(temp_f);
+						numOfF++;
+					}
+				}
 			}
 		}
 		objFile.close();
+		//sub mesh texture mapping confirm process
+		for (int i = 0; i < Mesh_subList.size(); i++) {
+			if (Mesh_subList[i].loadFile.size() != 0) {
+				texFileList.push_back(Mesh_subList[i].loadFile);
+				subTexArr[subTex_arrIdx++] = Mesh_subList[i].sub_texture;
+			}
+		}
+		//collect texture mapping
+		if (texFileList.size() != 0) {
+			glGenTextures(subTex_arrIdx, subTexArr);
+			for (int i = 0; i < subTex_arrIdx; i++)
+				LoadMeshFromFile(texFileList[i], subTexArr[i]);
+		}
 	}
 	else {
 		cout << "Unable to open obj file";
@@ -232,16 +304,16 @@ int Model_OBJ_Texture::Load(char * filename)
 
 void Model_OBJ_Texture::Draw()
 {
+	int arrIdx = 0;
 	for (int i = 0; i < Mesh_subList.size(); i++) {
 		if (Mesh_subList[i].loadFile.size()!=0) {
 			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, Mesh_subList[i].sub_texture);
+			glBindTexture(GL_TEXTURE_2D, subTexArr[arrIdx++]);
 			Mesh_subList[i].setMaterial();
 			for (int j = 0; j < Mesh_subList[i].subMesh_fList.size(); j++) {
 				if (Mesh_subList[i].subMesh_fList[j].face_vList.size() == VERTEX_PER_TRIANGLE) {
 					glBegin(GL_TRIANGLES);
 					for (int k = 0; k < VERTEX_PER_TRIANGLE; k++) {
-						//printf("%d %d %d \n", i, j, k);
 						if (Mesh_subList[i].subMesh_fList[j].face_uvList.size() > 0) {
 							glTexCoord2f(Mesh_subList[i].subMesh_fList[j].face_uvList[k].x, Mesh_subList[i].subMesh_fList[j].face_uvList[k].y);
 						}
@@ -253,6 +325,17 @@ void Model_OBJ_Texture::Draw()
 				else if (Mesh_subList[i].subMesh_fList[j].face_vList.size() == VERTEX_PER_QUAD) {
 					glBegin(GL_QUADS);
 					for (int k = 0; k < VERTEX_PER_QUAD; k++) {
+						if (Mesh_subList[i].subMesh_fList[j].face_uvList.size() > 0) {
+							glTexCoord2f(Mesh_subList[i].subMesh_fList[j].face_uvList[k].x, Mesh_subList[i].subMesh_fList[j].face_uvList[k].y);
+						}
+						glNormal3f(Mesh_subList[i].subMesh_fList[j].face_nList[k].x, Mesh_subList[i].subMesh_fList[j].face_nList[k].y, Mesh_subList[i].subMesh_fList[j].face_nList[k].z);
+						glVertex3f(Mesh_subList[i].subMesh_fList[j].face_vList[k].x, Mesh_subList[i].subMesh_fList[j].face_vList[k].y, Mesh_subList[i].subMesh_fList[j].face_vList[k].z);
+					}
+					glEnd();
+				}
+				else {
+					glBegin(GL_POLYGON);
+					for (int k = 0; k < Mesh_subList[i].subMesh_fList[j].face_vList.size(); k++) {
 						if (Mesh_subList[i].subMesh_fList[j].face_uvList.size() > 0) {
 							glTexCoord2f(Mesh_subList[i].subMesh_fList[j].face_uvList[k].x, Mesh_subList[i].subMesh_fList[j].face_uvList[k].y);
 						}
@@ -278,6 +361,14 @@ void Model_OBJ_Texture::Draw()
 				else if (Mesh_subList[i].subMesh_fList[j].face_vList.size() == VERTEX_PER_QUAD) {
 					glBegin(GL_QUADS);
 					for (int k = 0; k < VERTEX_PER_QUAD; k++) {
+						glNormal3f(Mesh_subList[i].subMesh_fList[j].face_nList[k].x, Mesh_subList[i].subMesh_fList[j].face_nList[k].y, Mesh_subList[i].subMesh_fList[j].face_nList[k].z);
+						glVertex3f(Mesh_subList[i].subMesh_fList[j].face_vList[k].x, Mesh_subList[i].subMesh_fList[j].face_vList[k].y, Mesh_subList[i].subMesh_fList[j].face_vList[k].z);
+					}
+					glEnd();
+				}
+				else {
+					glBegin(GL_POLYGON);
+					for (int k = 0; k < Mesh_subList[i].subMesh_fList[j].face_vList.size(); k++) {
 						glNormal3f(Mesh_subList[i].subMesh_fList[j].face_nList[k].x, Mesh_subList[i].subMesh_fList[j].face_nList[k].y, Mesh_subList[i].subMesh_fList[j].face_nList[k].z);
 						glVertex3f(Mesh_subList[i].subMesh_fList[j].face_vList[k].x, Mesh_subList[i].subMesh_fList[j].face_vList[k].y, Mesh_subList[i].subMesh_fList[j].face_vList[k].z);
 					}
